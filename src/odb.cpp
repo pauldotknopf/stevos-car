@@ -9,9 +9,8 @@ void ODB::setup()
 
 int ODB::getRPM()
 {
-    return 0;
     int value;
-    if(!_obd.readPID(PID_THROTTLE, value))
+    if(!_obd.readPID(PID_RPM, value))
     {
         return -1;
     }

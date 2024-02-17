@@ -2,7 +2,10 @@
 #include <AceButton.h>
 #include "config.h"
 #include "odb.h"
+#include "fakeodb.h"
 #include "lcd.h"
+
+#define FAKE_ODB
 
 using namespace ace_button;
 
@@ -16,7 +19,12 @@ AceButton buttonMode(BUTTON_MODE_PIN);
 AceButton buttonIncrement(BUTTON_INC_PIN);
 AceButton buttonDecrement(BUTTON_DEC_PIN);
 
+#ifdef FAKE_ODB
+FakeODB odb;
+#else
 ODB odb;
+#endif
+
 LCD lcd;
 Config config;
 
@@ -30,7 +38,9 @@ void buttonEvent(AceButton *, uint8_t, uint8_t);
 // the setup routine runs once when you press reset:
 void setup()
 {
-    delay(10000);
+#ifdef FAKE_ODB
+    Serial.begin(9600);
+#endif
 
     pinMode(BUTTON_CALIBRATE_PIN, INPUT);
     pinMode(BUTTON_MODE_PIN, INPUT);
@@ -46,14 +56,7 @@ void setup()
 // the loop routine runs over and over again forever:
 void loop()
 {
-    lcd.clear();
-    lcd.print("test");
-    lcd.printInt(odb.getRPM());
-    lcd.println();
-    delay(1000);
-    return;
-
-    if(calibrating)
+    if (calibrating)
     {
         int rpm = odb.getRPM();
         if (rpm < calibrateMinRpm)
@@ -65,7 +68,7 @@ void loop()
             calibrateMaxRpm = rpm;
         }
 
-        if(millis() - calibratingStart > 10000)
+        if (millis() - calibratingStart > 10000)
         {
             calibrating = false;
             Serial.println("Calibration done");
@@ -93,7 +96,7 @@ void buttonEvent(AceButton *button, uint8_t eventType, uint8_t)
     if (button == &buttonCalibrate)
     {
         Serial.println("Calibrate button pressed");
-        if(!calibrating)
+        if (!calibrating)
         {
             calibrating = true;
             calibratingStart = millis();
