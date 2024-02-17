@@ -1,0 +1,6 @@
+[submodule "deps/AceButton"]
+	path = deps/AceButton
+	url = https://github.com/bxparks/AceButton.git
+[submodule "deps/ArduinoODB"]
+	path = deps/ArduinoODB
+	url = https://github.com/stanleyhuangyc/ArduinoOBD.git
