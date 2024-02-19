@@ -4,3 +4,6 @@
 [submodule "deps/ArduinoODB"]
 	path = deps/ArduinoODB
 	url = https://github.com/stanleyhuangyc/ArduinoOBD.git
+[submodule "deps/Adafruit_NeoPixel"]
+	path = deps/Adafruit_NeoPixel
+	url = https://github.com/adafruit/Adafruit_NeoPixel.git
