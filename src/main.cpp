@@ -74,7 +74,10 @@ void setup()
     pinMode(BUTTON_DEC_PIN, INPUT);
     ButtonConfig::getSystemButtonConfig()->setEventHandler(buttonEvent);
 
-    odb.setup();
+    if(throttleMode == 1)
+    {
+        odb.setup();
+    }
     lcd.setup();
 }
 
@@ -84,7 +87,6 @@ float getAccelVoltage()
     float result = 0;
     if(throttleMode == 1)
     {
-        //lcd.println("odb");
         int rpm = odb.getRPM();
         if(rpm < calibrateMinRpm)
         {
@@ -110,15 +112,7 @@ void loop()
 {
     lcd.clear();
     lcd.println("loop");
-    if(calibrating)
-    {
-        lcd.println("calibrating");
-        lcd.println(odb.getRPM());
-    }else
-    {
-        lcd.println(calibrateMinRpm);
-        lcd.println(calibrateMaxRpm);
-    }
+   
     if (calibrating)
     {
         int rpm = odb.getRPM();
