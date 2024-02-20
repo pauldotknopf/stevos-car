@@ -7,9 +7,9 @@ public:
     void updateState();
     bool isBrakePressed();
     bool isClutchPressed();
-    float getAccelVoltage();
+    int getAccelVoltage();
 private:
     bool _brakePressed;
     bool _clutchPressed;
-    float _accelVoltage;
+    int _accelVoltage;
 };

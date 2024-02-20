@@ -14,12 +14,12 @@ void GPIO::setup()
 
 void GPIO::updateState()
 {
-    _accelVoltage = analogRead(ACCEL_INPUT_VOL_PIN) * (3.7f / 790);
+    _accelVoltage = analogRead(ACCEL_INPUT_VOL_PIN);
     _brakePressed = digitalRead(BREAK_INPUT_PIN) == HIGH;
     _clutchPressed = digitalRead(CLUTCH_INPUT_PIN) == HIGH;
 }
 
-float GPIO::getAccelVoltage()
+int GPIO::getAccelVoltage()
 {
     return _accelVoltage;
 }

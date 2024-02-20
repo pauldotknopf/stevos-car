@@ -29,5 +29,5 @@ int Config::getRpmMax()
 
 void Config::setRpmMax(int value)
 {
-    EEPROM.write(sizeof(int) * 1, value);
+    EEPROM.put(sizeof(int) * 1, value);
 }
