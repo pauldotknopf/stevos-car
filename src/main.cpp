@@ -19,8 +19,6 @@ using namespace ace_button;
 
 #define THROTTLE_MODE_PIN 8
 
-#define LED_COUNT 10
-
 AceButton buttonCalibrate(BUTTON_CALIBRATE_PIN);
 AceButton buttonMode(BUTTON_MODE_PIN);
 AceButton buttonIncrement(BUTTON_INC_PIN);
@@ -41,9 +39,10 @@ int throttleMode = 0;
 unsigned long lastShowTime;
 
 bool calibrating = false;
-int calibratingStart = 0;
-int calibrateMinRpm = -1;
-int calibrateMaxRpm = -1;
+unsigned long calibratingStart = 0;
+int calibrateMin = -1;
+int calibrateMax = -1;
+int ledCount = 1;
 
 void buttonEvent(AceButton *, uint8_t, uint8_t);
 
@@ -54,8 +53,17 @@ void setup()
     lcd.clear();
     lcd.println("connecting...");
 
-    calibrateMinRpm = config.getRpmMin();
-    calibrateMaxRpm = config.getRpmMax();
+    calibrateMin = config.getCalibrationMin();
+    calibrateMax = config.getCalibrationMax();
+    ledCount = config.getLedCount();
+    if(ledCount < 3)
+    {
+        ledCount = 3;
+    }
+    if(ledCount > MAX_LED_COUNT)
+    {
+        ledCount = MAX_LED_COUNT;
+    }
     
     pinMode(THROTTLE_MODE_PIN, INPUT);
     throttleMode = digitalRead(THROTTLE_MODE_PIN);
@@ -88,22 +96,31 @@ float getAccelVoltage()
     if(throttleMode == 1)
     {
         int rpm = odb.getRPM();
-        if(rpm < calibrateMinRpm)
+        if(rpm < calibrateMin)
         {
-            rpm = calibrateMinRpm;
+            rpm = calibrateMin;
         }
-        if(rpm > calibrateMaxRpm)
+        if(rpm > calibrateMax)
         {
-            rpm = calibrateMaxRpm;
+            rpm = calibrateMax;
         }
         // This value is 0-1000, factoring in calibration min/max.
-        long mapped = map(rpm, calibrateMinRpm, calibrateMaxRpm, 0, 1000);
+        long mapped = map(rpm, calibrateMin, calibrateMax, 0, 1000);
         return (mapped * 5) / 1000.0;
     }
     else
     {
         int accel = gpio.getAccelVoltage();
-        return (accel * 5) / 1023.0;
+        if(accel < calibrateMin)
+        {
+            accel = calibrateMin;
+        }
+        if(accel > calibrateMax)
+        {
+            accel = calibrateMax;
+        }
+        long mapped = map(accel, calibrateMin, calibrateMax, 0, 1023);
+        return (mapped * 5) / 1023.0;
     }
 }
 
@@ -112,31 +129,43 @@ void loop()
 {
     lcd.clear();
     lcd.println("loop");
+    lcd.println("led: " + String(ledCount));
+    // lcd.println(odb.getRPM());
+    // lcd.println("test");
+    // return;
    
     if (calibrating)
     {
-        int rpm = odb.getRPM();
-        if(calibrateMaxRpm == -1)
+        int rpm;
+        if(throttleMode == 1)
         {
-            calibrateMaxRpm = rpm;
+            rpm = odb.getRPM();
         }
         else
         {
-            if (rpm > calibrateMaxRpm)
+            rpm = gpio.getAccelVoltage();
+        }
+        if(calibrateMax == -1)
+        {
+            calibrateMax = rpm;
+        }
+        else
+        {
+            if (rpm > calibrateMax)
             {
-                calibrateMaxRpm = rpm;
+                calibrateMax = rpm;
             }
         }
 
-        if(calibrateMinRpm == -1)
+        if(calibrateMin == -1)
         {
-            calibrateMinRpm = rpm;
+            calibrateMin = rpm;
         }
         else
         {
-            if (rpm < calibrateMinRpm)
+            if (rpm < calibrateMin)
             {
-                calibrateMinRpm = rpm;
+                calibrateMin = rpm;
             }
         }
 
@@ -144,8 +173,13 @@ void loop()
         {
             calibrating = false;
 
-            config.setRpmMin(calibrateMinRpm);
-            config.setRpmMax(calibrateMaxRpm);
+            #ifdef FAKE_ODB
+            Serial.println("Calibration min: " + String(calibrateMin));
+            Serial.println("Calibration max: " + String(calibrateMax));
+            #endif
+
+            config.setCalibrationMin(calibrateMin);
+            config.setCalibrationMax(calibrateMax);
         }
     }
 
@@ -169,9 +203,9 @@ void loop()
         }
 
         float voltage = getAccelVoltage();
-        lcd.println(voltage * 1000);
-
-        int howManyLedsToLightUp = round((voltage * LED_COUNT) / 3);
+        lcd.println("v: " + String(voltage * 5000));
+        
+        int howManyLedsToLightUp = round((voltage * ledCount) / 3);
 
         for (int x = 0; x < howManyLedsToLightUp - 2; x++)
         {
@@ -204,22 +238,38 @@ void buttonEvent(AceButton *button, uint8_t eventType, uint8_t)
         //Serial.println("Calibrate button pressed");
         if (!calibrating)
         {
+            #ifdef FAKE_ODB
+            Serial.println("Calibrating...");
+            #endif
             calibrating = true;
-            calibrateMinRpm = -1;
-            calibrateMaxRpm = -1;
-            calibratingStart = millis();
+            calibrateMin = -1;
+            calibrateMax = -1;
+            calibratingStart = millis() - 1000;
         }
     }
     else if (button == &buttonMode)
     {
         //Serial.println("Mode button pressed");
+        //Serial.println("ledCount: " + String(ledCount));
     }
     else if (button == &buttonIncrement)
     {
-        //Serial.println("Increment button pressed");
+        ledCount++;
+        if(ledCount > MAX_LED_COUNT)
+        {
+            ledCount = MAX_LED_COUNT;
+        }
+        config.setLedCount(ledCount);
+        //Serial.println("ledCount: " + String(ledCount));
     }
     else if (button == &buttonDecrement)
     {
-        //Serial.println("Decrement button pressed");
+        ledCount--;
+        if(ledCount < 3)
+        {
+            ledCount = 3;
+        }
+        config.setLedCount(ledCount);
+        //Serial.println("ledCount: " + String(ledCount));
     }
 }

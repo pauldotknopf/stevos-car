@@ -8,26 +8,38 @@ void Config::clear()
     }
 }
 
-int Config::getRpmMin()
+int Config::getCalibrationMin()
 {
     int result = 0;
     EEPROM.get(sizeof(int) * 0, result);
     return result;
 }
 
-void Config::setRpmMin(int value)
+void Config::setCalibrationMin(int value)
 {
     EEPROM.put(sizeof(int) * 0, value);
 }
 
-int Config::getRpmMax()
+int Config::getCalibrationMax()
 {
     int result = 0;
     EEPROM.get(sizeof(int) * 1, result);
     return result;
 }
 
-void Config::setRpmMax(int value)
+void Config::setCalibrationMax(int value)
 {
     EEPROM.put(sizeof(int) * 1, value);
+}
+
+int Config::getLedCount()
+{
+    int result = 0;
+    EEPROM.get(sizeof(int) * 2, result);
+    return result;
+}
+
+void Config::setLedCount(int value)
+{
+    EEPROM.put(sizeof(int) * 2, value);
 }

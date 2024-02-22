@@ -4,8 +4,10 @@ class Config
 {
 public:
     void clear();
-    int getRpmMin();
-    void setRpmMin(int value);
-    int getRpmMax();
-    void setRpmMax(int value);
+    int getCalibrationMin();
+    void setCalibrationMin(int value);
+    int getCalibrationMax();
+    void setCalibrationMax(int value);
+    int getLedCount();
+    void setLedCount(int value);
 };
