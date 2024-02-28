@@ -3,7 +3,7 @@
 	url = https://github.com/bxparks/AceButton.git
 [submodule "deps/ArduinoODB"]
 	path = deps/ArduinoODB
-	url = https://github.com/stanleyhuangyc/ArduinoOBD.git
+	url = https://github.com/pauldotknopf/ArduinoOBD.git
 [submodule "deps/Adafruit_NeoPixel"]
 	path = deps/Adafruit_NeoPixel
 	url = https://github.com/adafruit/Adafruit_NeoPixel.git
