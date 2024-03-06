@@ -3,7 +3,7 @@
 #define LED_PIN 6
 
 Pixels::Pixels()
-    : _strip(MAX_LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ400)
+    : _strip(MAX_LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800)
 {
 
 }
