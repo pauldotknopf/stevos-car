@@ -11,3 +11,5 @@ off           strobe white (ON TIME, DELAY TIME)   strobe BLUE/PURPLE   strobe g
 if aboVE 90% FOR 2 SECONDS
     TURN ON SMOKE LIGHTS FOR 10 SECONDS
 FI
+
+jhhgf
