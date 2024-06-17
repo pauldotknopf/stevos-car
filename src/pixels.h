@@ -2,7 +2,7 @@
 
 #include "Adafruit_NeoPixel.h"
 
-#define MAX_LED_COUNT 50
+#define MAX_LED_COUNT 300
 
 class Pixels
 {

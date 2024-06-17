@@ -7,7 +7,7 @@
 #include "pixels.h"
 #include "gpio.h"
 
-#define MAX_LED_COUNT 20
+#define MAX_LED_COUNT 300
 //#define FAKE_ODB
 
 using namespace ace_button;
@@ -211,13 +211,13 @@ void loop()
         {
             if (gpio.isClutchPressed())
             {
-                // yellow
-                pixels.setPixelColor(x, Pixels::Color(255, 255, 0));
+                // for reversed clutch switch change to 0, 255, 0
+                pixels.setPixelColor(x, Pixels::Color(0, 255, 0));
             }
             else
             {
-                // green
-                pixels.setPixelColor(x, Pixels::Color(0, 255, 0));
+                // for reversed clutch switch change to 255, 255, 0
+                pixels.setPixelColor(x, Pixels::Color(255, 255, 0));
             }
         }
 
