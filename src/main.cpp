@@ -5,10 +5,10 @@
 #include "fakeodb.h"
 #include "lcd.h"
 #include "pixels.h"
+#include "smokepixels.h"
 #include "gpio.h"
 
-#define MAX_LED_COUNT 300
-//#define FAKE_ODB
+#define FAKE_ODB
 
 using namespace ace_button;
 
@@ -33,6 +33,7 @@ ODB odb;
 LCD lcd;
 Config config;
 Pixels pixels;
+//SmokePixels smokePixels;
 GPIO gpio;
 int throttleMode = 0;
 
@@ -60,9 +61,9 @@ void setup()
     {
         ledCount = 3;
     }
-    if(ledCount > MAX_LED_COUNT)
+    if(ledCount > pixels.ledCount())
     {
-        ledCount = MAX_LED_COUNT;
+        ledCount = pixels.ledCount();
     }
     
     pinMode(THROTTLE_MODE_PIN, INPUT);
@@ -74,6 +75,7 @@ void setup()
 #endif
 
     pixels.setup();
+    //smokePixels.setup();
     gpio.setup();
 
     pinMode(BUTTON_CALIBRATE_PIN, INPUT);
@@ -134,6 +136,9 @@ void loop()
     // lcd.println("test");
     // return;
    
+    //smokePixels.fillAll(Pixels::Color(255, 0, 0));
+    //smokePixels.show();
+
     if (calibrating)
     {
         int rpm;
@@ -255,9 +260,9 @@ void buttonEvent(AceButton *button, uint8_t eventType, uint8_t)
     else if (button == &buttonIncrement)
     {
         ledCount++;
-        if(ledCount > MAX_LED_COUNT)
+        if(ledCount > pixels.ledCount())
         {
-            ledCount = MAX_LED_COUNT;
+            ledCount = pixels.ledCount();
         }
         config.setLedCount(ledCount);
         //Serial.println("ledCount: " + String(ledCount));

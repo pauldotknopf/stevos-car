@@ -2,10 +2,10 @@
 
 #include "Adafruit_NeoPixel.h"
 
-class Pixels
+class SmokePixels
 {
 public:
-    Pixels();
+    SmokePixels();
     void setup();
     void clearAll();
     void setPixelColor(uint16_t index, uint32_t color);
