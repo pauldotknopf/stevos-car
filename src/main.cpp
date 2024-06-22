@@ -52,6 +52,27 @@ int ledCount = 1;
 
 void buttonEvent(AceButton *, uint8_t, uint8_t);
 
+// clutch on, clutch off, brake
+int trsColorIndex = 0;
+CRGB trsColorSchemes[4][3] = { 
+    { CRGB(0, 255, 0), CRGB(255, 255, 0), CRGB(255, 0, 0) },
+    // TODO: Make these the colors
+    { CRGB(255, 0, 0), CRGB(255, 0, 0), CRGB(255, 0, 0) },
+    { CRGB(255, 0, 0), CRGB(255, 0, 0), CRGB(255, 0, 0) },
+    { CRGB(255, 0, 0), CRGB(255, 0, 0), CRGB(255, 0, 0) }
+};
+
+int smokeMode = 0;
+
+// CURRENT     MODE 2     MODE 3       MODE 4
+// RED         VIOLET     ORANGE       RED/PURPLE (BURGUNDY)
+// YELLOW      GREEN      BLUE         YELLOW/GREEN (CHARTREUSE)
+// GREEN       ORANGE     VIOLET       GREEN/BLUE (TEAL)
+#define LED_TYPE    WS2811
+#define COLOR_ORDER GRB
+#define NUM_LEDS    64
+#define DATA_PIN    3
+
 // the setup routine runs once when you press reset:
 void setup()
 {
@@ -79,14 +100,17 @@ void setup()
     Serial.begin(9600);
 #endif
 
-    FastLED.addLeds<NEOPIXEL, 5>(ledMeter, LED_COUNT_METER);
-    FastLED.addLeds<NEOPIXEL, 6>(ledSmoke, LED_COUNT_SMOKE);
+    FastLED.addLeds<WS2812, 5, RGB>(ledMeter, LED_COUNT_METER);
+    FastLED.addLeds<WS2812, 6, RGB>(ledSmoke, LED_COUNT_SMOKE);
     gpio.setup();
 
     pinMode(BUTTON_CALIBRATE_PIN, INPUT);
     pinMode(BUTTON_MODE_PIN, INPUT);
     pinMode(BUTTON_INC_PIN, INPUT);
     pinMode(BUTTON_DEC_PIN, INPUT);
+    
+    ButtonConfig::getSystemButtonConfig()->setFeature(ButtonConfig::kFeatureLongPress);
+    ButtonConfig::getSystemButtonConfig()->setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
     ButtonConfig::getSystemButtonConfig()->setEventHandler(buttonEvent);
 
     if(throttleMode == 1)
@@ -133,14 +157,7 @@ float getAccelVoltage()
 
 // the loop routine runs over and over again forever:
 void loop()
-{
-    lcd.clear();
-    lcd.println("loop");
-    lcd.println("led: " + String(ledCount));
-    // lcd.println(odb.getRPM());
-    // lcd.println("test");
-    // return;
-    
+{ 
     fill_solid(ledSmoke, LED_COUNT_SMOKE, CRGB(0, 255, 0));
 
     if (calibrating)
@@ -196,6 +213,7 @@ void loop()
     buttonMode.check();
     buttonIncrement.check();
     buttonDecrement.check();
+    return;
 
     unsigned long currentTime = millis();
     if ((currentTime - lastShowTime) >= 10) // every 10 milliseconds
@@ -208,7 +226,7 @@ void loop()
         // set the brake color, if it's pressed
         if (gpio.isBrakePressed())
         {
-            fill_solid(ledMeter, LED_COUNT_METER, CRGB(255, 0, 0));
+            fill_solid(ledMeter, LED_COUNT_METER, trsColorSchemes[trsColorIndex][2]);
         }
 
         float voltage = getAccelVoltage();
@@ -221,12 +239,12 @@ void loop()
             if (gpio.isClutchPressed())
             {
                 // for reversed clutch switch change to 0, 255, 0
-                ledMeter[x] = CRGB(0, 255, 0);
+                ledMeter[x] = trsColorSchemes[trsColorIndex][0];
             }
             else
             {
                 // for reversed clutch switch change to 255, 255, 0
-                ledMeter[x] = CRGB(255, 255, 0);
+                ledMeter[x] = trsColorSchemes[trsColorIndex][1];
             }
         }
         
@@ -236,49 +254,70 @@ void loop()
 
 void buttonEvent(AceButton *button, uint8_t eventType, uint8_t)
 {
+    Serial.print("event type: ");
+    Serial.println(eventType);
     // increment/decrym changes number of LEDs used
     // cal, press down and for 10 seconds, it will read min/max values of accelerate
 
-    if (eventType != AceButton::kEventReleased)
-        return;
+    if (eventType == AceButton::kEventPressed)
+    {
+        if (button == &buttonCalibrate)
+        {
+            //Serial.println("Calibrate button pressed");
+            if (!calibrating)
+            {
+                #ifdef FAKE_ODB
+                Serial.println("Calibrating...");
+                #endif
+                calibrating = true;
+                calibrateMin = -1;
+                calibrateMax = -1;
+                calibratingStart = millis() - 1000;
+            }
+        }
+        else if (button == &buttonIncrement)
+        {
+            ledCount++;
+            if(ledCount > LED_COUNT_METER)
+            {
+                ledCount = LED_COUNT_METER;
+            }
+            config.setLedCount(ledCount);
+            //Serial.println("ledCount: " + String(ledCount));
+        }
+        else if (button == &buttonDecrement)
+        {
+            ledCount--;
+            if(ledCount < 3)
+            {
+                ledCount = 3;
+            }
+            config.setLedCount(ledCount);
+            //Serial.println("ledCount: " + String(ledCount));
+        }
+        else if (button == &buttonMode)
+        {
+            smokeMode++;
+            if(smokeMode > 3)
+            {
+                smokeMode = 0;
+            }
+            //Serial.print("smoke mode: ");
+            //Serial.println(smokeMode);
+        }
+    }
 
-    if (button == &buttonCalibrate)
+    if(eventType == AceButton::kEventLongPressed)
     {
-        //Serial.println("Calibrate button pressed");
-        if (!calibrating)
+        if (button == &buttonMode)
         {
-            #ifdef FAKE_ODB
-            Serial.println("Calibrating...");
-            #endif
-            calibrating = true;
-            calibrateMin = -1;
-            calibrateMax = -1;
-            calibratingStart = millis() - 1000;
+            trsColorIndex++;
+            if(trsColorIndex > 3)
+            {
+                trsColorIndex = 0;
+            }
+            //Serial.print("trs color mode: ");
+            //Serial.println(trsColorIndex);
         }
-    }
-    else if (button == &buttonMode)
-    {
-        //Serial.println("Mode button pressed");
-        //Serial.println("ledCount: " + String(ledCount));
-    }
-    else if (button == &buttonIncrement)
-    {
-        ledCount++;
-        if(ledCount > LED_COUNT_METER)
-        {
-            ledCount = LED_COUNT_METER;
-        }
-        config.setLedCount(ledCount);
-        //Serial.println("ledCount: " + String(ledCount));
-    }
-    else if (button == &buttonDecrement)
-    {
-        ledCount--;
-        if(ledCount < 3)
-        {
-            ledCount = 3;
-        }
-        config.setLedCount(ledCount);
-        //Serial.println("ledCount: " + String(ledCount));
     }
 }
