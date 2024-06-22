@@ -7,3 +7,6 @@
 [submodule "deps/Adafruit_NeoPixel"]
 	path = deps/Adafruit_NeoPixel
 	url = https://github.com/adafruit/Adafruit_NeoPixel.git
+[submodule "deps/FastLED"]
+	path = deps/FastLED
+	url = https://github.com/FastLED/FastLED.git

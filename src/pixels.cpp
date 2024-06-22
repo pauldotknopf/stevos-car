@@ -3,17 +3,23 @@
 #define MAX_LED_COUNT 300
 #define LED_PIN 6
 
-Pixels::Pixels()
-    : _strip(MAX_LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800)
+Pixels::Pixels(int pixelCount, int pin) : _numberOfPixels(pixelCount), _pin(pin)
 {
-
+    
+    
 }
 
 void Pixels::setup()
 {
-    _strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-    _strip.show();            // Turn OFF all pixels ASAP
-    _strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
+    _leds = new CRGB[_numberOfPixels];
+    if(_pin == 5)
+    {
+        FastLED.addLeds<NEOPIXEL, 5>(_leds, _numberOfPixels);
+    }
+    else if(_pin == 6)
+    {
+        FastLED.addLeds<NEOPIXEL, 6>(_leds, _numberOfPixels);
+    }
 }
 
 void Pixels::clearAll()
@@ -23,7 +29,7 @@ void Pixels::clearAll()
 
 void Pixels::setPixelColor(uint16_t index, uint32_t color)
 {
-    _strip.setPixelColor(index, color);
+    _leds[index] = color;
 }
 
 void Pixels::fill(uint32_t color, uint16_t first, uint16_t count)
@@ -31,7 +37,7 @@ void Pixels::fill(uint32_t color, uint16_t first, uint16_t count)
     int index = first;
     while(count > 0)
     {
-        _strip.setPixelColor(index, color);
+        _leds[index] = color;
         index++;
         count--;
     }
@@ -39,13 +45,13 @@ void Pixels::fill(uint32_t color, uint16_t first, uint16_t count)
 
 void Pixels::fillAll(uint32_t color)
 {
-    for(int x = 0; x < MAX_LED_COUNT; x++)
+    for(int x = 0; x < 5; x++)
     {
-        _strip.setPixelColor(x, color);
+        _leds[x] = color;
     }
 }
 
 void Pixels::show()
 {
-    _strip.show();
+    FastLED.show();
 }
