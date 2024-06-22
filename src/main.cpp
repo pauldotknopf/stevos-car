@@ -4,13 +4,15 @@
 #include "odb.h"
 #include "fakeodb.h"
 #include "lcd.h"
-#include "pixels.h"
-#include "smokepixels.h"
 #include "gpio.h"
+#include <FastLED.h>
 
 #define FAKE_ODB
 
 using namespace ace_button;
+
+#define LED_COUNT_METER 100
+#define LED_COUNT_SMOKE 100
 
 #define BUTTON_CALIBRATE_PIN 2 // D2
 #define BUTTON_MODE_PIN 3      // D3
@@ -24,6 +26,9 @@ AceButton buttonMode(BUTTON_MODE_PIN);
 AceButton buttonIncrement(BUTTON_INC_PIN);
 AceButton buttonDecrement(BUTTON_DEC_PIN);
 
+CRGB ledMeter[LED_COUNT_METER];
+CRGB ledSmoke[LED_COUNT_SMOKE];
+
 #ifdef FAKE_ODB
 FakeODB odb;
 #else
@@ -32,7 +37,7 @@ ODB odb;
 
 LCD lcd;
 Config config;
-Pixels pixels;
+
 //SmokePixels smokePixels;
 GPIO gpio;
 int throttleMode = 0;
@@ -61,9 +66,9 @@ void setup()
     {
         ledCount = 3;
     }
-    if(ledCount > pixels.ledCount())
+    if(ledCount > LED_COUNT_METER)
     {
-        ledCount = pixels.ledCount();
+        ledCount = LED_COUNT_METER;
     }
     
     pinMode(THROTTLE_MODE_PIN, INPUT);
@@ -74,8 +79,8 @@ void setup()
     Serial.begin(9600);
 #endif
 
-    pixels.setup();
-    //smokePixels.setup();
+    FastLED.addLeds<NEOPIXEL, 5>(ledMeter, LED_COUNT_METER);
+    FastLED.addLeds<NEOPIXEL, 6>(ledSmoke, LED_COUNT_SMOKE);
     gpio.setup();
 
     pinMode(BUTTON_CALIBRATE_PIN, INPUT);
@@ -135,9 +140,8 @@ void loop()
     // lcd.println(odb.getRPM());
     // lcd.println("test");
     // return;
-   
-    //smokePixels.fillAll(Pixels::Color(255, 0, 0));
-    //smokePixels.show();
+    
+    fill_solid(ledSmoke, LED_COUNT_SMOKE, CRGB(0, 255, 0));
 
     if (calibrating)
     {
@@ -199,12 +203,12 @@ void loop()
         gpio.updateState();
 
         // set all pixels to black
-        pixels.clearAll();
+        fill_solid(ledMeter, LED_COUNT_METER, CRGB::Black);
 
         // set the brake color, if it's pressed
         if (gpio.isBrakePressed())
         {
-            pixels.fillAll(Pixels::Color(255, 0, 0));
+            fill_solid(ledMeter, LED_COUNT_METER, CRGB(255, 0, 0));
         }
 
         float voltage = getAccelVoltage();
@@ -217,16 +221,16 @@ void loop()
             if (gpio.isClutchPressed())
             {
                 // for reversed clutch switch change to 0, 255, 0
-                pixels.setPixelColor(x, Pixels::Color(0, 255, 0));
+                ledMeter[x] = CRGB(0, 255, 0);
             }
             else
             {
                 // for reversed clutch switch change to 255, 255, 0
-                pixels.setPixelColor(x, Pixels::Color(255, 255, 0));
+                ledMeter[x] = CRGB(255, 255, 0);
             }
         }
-
-        pixels.show();
+        
+        FastLED.show();
     }
 }
 
@@ -260,9 +264,9 @@ void buttonEvent(AceButton *button, uint8_t eventType, uint8_t)
     else if (button == &buttonIncrement)
     {
         ledCount++;
-        if(ledCount > pixels.ledCount())
+        if(ledCount > LED_COUNT_METER)
         {
-            ledCount = pixels.ledCount();
+            ledCount = LED_COUNT_METER;
         }
         config.setLedCount(ledCount);
         //Serial.println("ledCount: " + String(ledCount));
