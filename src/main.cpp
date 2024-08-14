@@ -212,12 +212,12 @@ void loop()
             if (gpio.isClutchPressed())
             {
                 // for reversed clutch switch change to 0, 255, 0
-                pixels.setPixelColor(x, Pixels::Color(0, 255, 0));
+                pixels.setPixelColor(x, Pixels::Color(255, 255, 0));
             }
             else
             {
                 // for reversed clutch switch change to 255, 255, 0
-                pixels.setPixelColor(x, Pixels::Color(255, 255, 0));
+                pixels.setPixelColor(x, Pixels::Color(0, 255, 0));
             }
         }
 
