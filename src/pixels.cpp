@@ -1,9 +1,9 @@
 #include "pixels.h"
 
 Pixels::Pixels()
-    : _strip1(MAX_LED_COUNT, LED_PIN1, NEO_RGB + NEO_KHZ800)
+    : _strip1(MAX_LED_COUNT, LED_PIN2, NEO_RGB + NEO_KHZ800)
     #ifdef LED_PIN2
-    , _strip2(MAX_LED_COUNT, LED_PIN2, NEO_RGB + NEO_KHZ800)
+    , _strip2(MAX_LED_COUNT, LED_PIN1, NEO_RGB + NEO_KHZ800)
     #endif
 {
 

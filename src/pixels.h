@@ -4,7 +4,7 @@
 
 #define LED_PIN1 5
 #define LED_PIN2 6
-#define MAX_LED_COUNT 300
+#define MAX_LED_COUNT 105
 
 class Pixels
 {
