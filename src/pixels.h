@@ -2,6 +2,8 @@
 
 #include "Adafruit_NeoPixel.h"
 
+#define LED_PIN1 5
+#define LED_PIN2 6
 #define MAX_LED_COUNT 300
 
 class Pixels
@@ -18,5 +20,8 @@ public:
     }
     void show();
 private:
-    Adafruit_NeoPixel _strip;
+    Adafruit_NeoPixel _strip1;
+    #ifdef LED_PIN2
+    Adafruit_NeoPixel _strip2;
+    #endif
 };
