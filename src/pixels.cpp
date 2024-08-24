@@ -31,7 +31,7 @@ void Pixels::setPixelColor(uint16_t index, uint32_t color)
 {
     _strip1.setPixelColor(index, color);
     #ifdef LED_PIN2
-    _strip1.setPixelColor(index, color);
+    _strip2.setPixelColor(index, color);
     #endif
 }
 
